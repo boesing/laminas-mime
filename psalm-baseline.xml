@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<files psalm-version="4.21.0@d8bec4c7aaee111a532daec32fb09de5687053d1">
+  <file src="src/Message.php">
+    <UnsafeInstantiation occurrences="1">
+      <code>new static()</code>
+    </UnsafeInstantiation>
+  </file>
+  <file src="src/Part.php">
+    <InvalidReturnStatement occurrences="2">
+      <code>$this-&gt;content</code>
+      <code>$this-&gt;content</code>
+    </InvalidReturnStatement>
+    <InvalidReturnType occurrences="2">
+      <code>resource</code>
+      <code>string</code>
+    </InvalidReturnType>
+    <PossiblyInvalidArgument occurrences="4">
+      <code>$this-&gt;content</code>
+      <code>$this-&gt;content</code>
+      <code>$this-&gt;content</code>
+      <code>$this-&gt;content</code>
+    </PossiblyInvalidArgument>
+    <RedundantCastGivenDocblockType occurrences="1">
+      <code>(bool) $isStream</code>
+    </RedundantCastGivenDocblockType>
+    <UnusedFunctionCall occurrences="2">
+      <code>stream_filter_remove</code>
+      <code>stream_filter_remove</code>
+    </UnusedFunctionCall>
+  </file>
+</files>

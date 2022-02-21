@@ -2,7 +2,7 @@
 
 namespace Laminas\Mime;
 
-use Laminas\Mail\Header\HeaderInterface;
+use Laminas\Mail\Headers;
 use Laminas\Mime\Mime;
 use Laminas\Mime\Part;
 
@@ -20,7 +20,10 @@ use function trim;
 
 class Message
 {
-    /** @var Part[] */
+    /**
+     * @var Part[]
+     * @psalm-var list<Part>
+     */
     protected $parts = [];
 
     /** @var null|Mime */
@@ -40,6 +43,7 @@ class Message
      * Sets the given array of Laminas\Mime\Part as the array for the message
      *
      * @param array $parts
+     * @psalm-param list<Part> $parts
      * @return self
      */
     public function setParts($parts)
@@ -60,7 +64,7 @@ class Message
             if ($part === $row) {
                 throw new Exception\InvalidArgumentException(sprintf(
                     'Provided part %s already defined.',
-                    $part->getId()
+                    $part->getId() ?? '<unknown id>'
                 ));
             }
         }
@@ -245,8 +249,10 @@ class Message
     public static function createFromMessage($message, $boundary = null, $EOL = Mime::LINEEND)
     {
         if ($boundary) {
-            $parts = Decode::splitMessageStruct($message, $boundary, $EOL);
+            $parts = Decode::splitMessageStruct($message, $boundary, $EOL) ?? [];
         } else {
+            $headers = new Headers();
+            $body    = '';
             Decode::splitMessage($message, $headers, $body, $EOL);
             $parts = [
                 [
@@ -261,7 +267,6 @@ class Message
             // now we build a new MimePart for the current Message Part:
             $properties = [];
             foreach ($part['header'] as $header) {
-                /** @var HeaderInterface $header */
                 /**
                  * @todo check for characterset and filename
                  */

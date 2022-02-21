@@ -22,6 +22,14 @@ use const STREAM_FILTER_READ;
  */
 class Part
 {
+    public const HEADER_CONTENT_DESCRIPTION       = 'Content-Description';
+    public const HEADER_CONTENT_DISPOSITION       = 'Content-Disposition';
+    public const HEADER_CONTENT_ID                = 'Content-ID';
+    public const HEADER_CONTENT_LANGUAGE          = 'Content-Language';
+    public const HEADER_CONTENT_LOCATION          = 'Content-Location';
+    public const HEADER_CONTENT_TRANSFER_ENCODING = 'Content-Transfer-Encoding';
+    public const HEADER_CONTENT_TYPE              = 'Content-Type';
+
     /** @var string */
     public $type = Mime::TYPE_OCTETSTREAM;
 
@@ -142,7 +150,7 @@ class Part
     /**
      * Get id
      *
-     * @return string
+     * @return string|null
      */
     public function getId()
     {
@@ -164,7 +172,7 @@ class Part
     /**
      * Get disposition
      *
-     * @return string
+     * @return string|null
      */
     public function getDisposition()
     {
@@ -186,7 +194,7 @@ class Part
     /**
      * Get description
      *
-     * @return string
+     * @return string|null
      */
     public function getDescription()
     {
@@ -208,7 +216,7 @@ class Part
     /**
      * Get filename
      *
-     * @return string
+     * @return string|null
      */
     public function getFileName()
     {
@@ -230,7 +238,7 @@ class Part
     /**
      * Get charset
      *
-     * @return string
+     * @return string|null
      */
     public function getCharset()
     {
@@ -252,7 +260,7 @@ class Part
     /**
      * Get boundary
      *
-     * @return string
+     * @return string|null
      */
     public function getBoundary()
     {
@@ -274,7 +282,7 @@ class Part
     /**
      * Get location
      *
-     * @return string
+     * @return string|null
      */
     public function getLocation()
     {
@@ -296,7 +304,7 @@ class Part
     /**
      * Get language
      *
-     * @return string
+     * @return string|null
      */
     public function getLanguage()
     {
@@ -472,8 +480,14 @@ class Part
     public function getRawContent()
     {
         if ($this->isStream) {
-            return stream_get_contents($this->content);
+            $contents = stream_get_contents($this->content);
+            if ($contents === false) {
+                return '';
+            }
+
+            return $contents;
         }
+
         return $this->content;
     }
 
@@ -483,6 +497,7 @@ class Part
      * @access public
      * @param string $EOL
      * @return array
+     * @psalm-return list<array{0:Part::HEADER_*, 1:string}>
      */
     public function getHeadersArray($EOL = Mime::LINEEND)
     {
@@ -535,7 +550,7 @@ class Part
      * Return the headers for this part as a string
      *
      * @param string $EOL
-     * @return String
+     * @return string
      */
     public function getHeaders($EOL = Mime::LINEEND)
     {

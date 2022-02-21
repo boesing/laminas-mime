@@ -16,17 +16,16 @@ use function strpos;
  */
 class MessageTest extends TestCase
 {
-    public function testMultiPart()
+    public function testMultiPart(): void
     {
         $msg = new Mime\Message();  // No Parts
         $this->assertFalse($msg->isMultiPart());
     }
 
-    public function testSetGetParts()
+    public function testSetGetParts(): void
     {
         $msg = new Mime\Message();  // No Parts
         $p   = $msg->getParts();
-        $this->assertIsArray($p);
         $this->assertEmpty($p);
 
         $p2   = [];
@@ -34,11 +33,10 @@ class MessageTest extends TestCase
         $p2[] = new Mime\Part('This is another test');
         $msg->setParts($p2);
         $p = $msg->getParts();
-        $this->assertIsArray($p);
         $this->assertCount(2, $p);
     }
 
-    public function testGetMime()
+    public function testGetMime(): void
     {
         $msg = new Mime\Message();  // No Parts
         $m   = $msg->getMime();
@@ -52,7 +50,7 @@ class MessageTest extends TestCase
         $this->assertEquals('1234', $m2->boundary());
     }
 
-    public function testGenerate()
+    public function testGenerate(): void
     {
         $msg = new Mime\Message();  // No Parts
         $p1  = new Mime\Part('This is a test');
@@ -62,7 +60,8 @@ class MessageTest extends TestCase
         $res      = $msg->generateMessage();
         $mime     = $msg->getMime();
         $boundary = $mime->boundary();
-        $p1       = strpos($res, $boundary);
+        $this->assertIsString($boundary);
+        $p1 = strpos($res, $boundary);
         // $boundary must appear once for every mime part
         $this->assertNotFalse($p1);
         if ($p1) {
@@ -78,7 +77,7 @@ class MessageTest extends TestCase
     /**
      * check if decoding a string into a \Laminas\Mime\Message object works
      */
-    public function testDecodeMimeMessage()
+    public function testDecodeMimeMessage(): void
     {
         $text = <<<EOD
 This is a message in Mime Format.  If you see this, your mail reader does not support this format.
@@ -114,7 +113,7 @@ EOD;
     /**
      * check if decoding a string into a \Laminas\Mime\Message object works
      */
-    public function testDecodeMimeMessageNoHeader()
+    public function testDecodeMimeMessageNoHeader(): void
     {
         $text = <<<EOD
 This is a MIME-encapsulated message
@@ -148,7 +147,7 @@ EOD;
     /**
      * Check if decoding a string that is not a multipart message works
      */
-    public function testDecodeNonMultipartMimeMessage()
+    public function testDecodeNonMultipartMimeMessage(): void
     {
         $text = <<<EOD
 Content-Type: image/gif
@@ -166,7 +165,7 @@ EOD;
         $this->assertEquals('image/gif', $part1->type);
     }
 
-    public function testNonMultipartMessageShouldNotRemovePartFromMessage()
+    public function testNonMultipartMessageShouldNotRemovePartFromMessage(): void
     {
         $message = new Mime\Message();  // No Parts
         $part    = new Mime\Part('This is a test');
@@ -181,7 +180,7 @@ EOD;
     /**
      * @group Laminas-5962
      */
-    public function testPassEmptyArrayIntoSetPartsShouldReturnEmptyString()
+    public function testPassEmptyArrayIntoSetPartsShouldReturnEmptyString(): void
     {
         $mimeMessage = new Mime\Message();
         $mimeMessage->setParts([]);
@@ -189,7 +188,7 @@ EOD;
         $this->assertEquals('', $mimeMessage->generateMessage());
     }
 
-    public function testDuplicatePartAddedWillThrowException()
+    public function testDuplicatePartAddedWillThrowException(): void
     {
         $this->expectException(Mime\Exception\InvalidArgumentException::class);
 
@@ -199,7 +198,7 @@ EOD;
         $message->addPart($part);
     }
 
-    public function testFromStringWithCrlfAndRfc2822FoldedHeaders()
+    public function testFromStringWithCrlfAndRfc2822FoldedHeaders(): void
     {
         // This is a fixture as provided by many mailservers
         // e.g. cyrus or dovecot

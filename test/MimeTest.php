@@ -43,7 +43,7 @@ class MimeTest extends TestCase
         date_default_timezone_set($this->originalTimezone);
     }
 
-    public function testBoundary()
+    public function testBoundary(): void
     {
         // check boundary for uniqueness
         $m1 = new Mime\Mime();
@@ -56,17 +56,17 @@ class MimeTest extends TestCase
         $this->assertEquals($m3->boundary(), $myBoundary);
     }
 
-    public function testIsNotPrintable()
+    public function testIsNotPrintable(): void
     {
         $this->assertFalse(Mime\Mime::isPrintable('Test with special chars: �����'));
     }
 
-    public function testIsPrintable()
+    public function testIsPrintable(): void
     {
         $this->assertTrue(Mime\Mime::isPrintable('Test without special chars'));
     }
 
-    public function testQP()
+    public function testQP(): void
     {
         $text = "This is a cool Test Text with special chars: ����\n"
               . "and with multiple lines���� some of the Lines are long, long"
@@ -79,7 +79,7 @@ class MimeTest extends TestCase
         $this->assertEquals(quoted_printable_decode($qp), $text);
     }
 
-    public function testQuotedPrintableNoDotAtBeginningOfLine()
+    public function testQuotedPrintableNoDotAtBeginningOfLine(): void
     {
         $text = str_repeat('a', Mime\Mime::LINELENGTH) . '.bbb';
         $qp   = Mime\Mime::encodeQuotedPrintable($text);
@@ -89,7 +89,7 @@ class MimeTest extends TestCase
         $this->assertEquals($expected, $qp);
     }
 
-    public function testQuotedPrintableSpacesAndDots()
+    public function testQuotedPrintableSpacesAndDots(): void
     {
         $text = str_repeat(' ', Mime\Mime::LINELENGTH) . str_repeat('.', Mime\Mime::LINELENGTH);
         $qp   = Mime\Mime::encodeQuotedPrintable($text);
@@ -101,7 +101,7 @@ class MimeTest extends TestCase
         $this->assertEquals($expected, $qp);
     }
 
-    public function testQuotedPrintableDoesNotBreakOctets()
+    public function testQuotedPrintableDoesNotBreakOctets(): void
     {
         $text = str_repeat('a', Mime\Mime::LINELENGTH - 2) . '=.bbb';
         $qp   = Mime\Mime::encodeQuotedPrintable($text);
@@ -111,14 +111,14 @@ class MimeTest extends TestCase
         $this->assertEquals($expected, $qp);
     }
 
-    public function testBase64()
+    public function testBase64(): void
     {
         $content = str_repeat("\x88\xAA\xAF\xBF\x29\x88\xAA\xAF\xBF\x29\x88\xAA\xAF", 4);
         $encoded = Mime\Mime::encodeBase64($content);
         $this->assertEquals($content, base64_decode($encoded));
     }
 
-    public function testLaminas1058WhitespaceAtEndOfBodyCausesInfiniteLoop()
+    public function testLaminas1058WhitespaceAtEndOfBodyCausesInfiniteLoop(): void
     {
         $text   = "my body\r\n\r\n...after two newlines\r\n ";
         $result = quoted_printable_decode(Mime\Mime::encodeQuotedPrintable($text));
@@ -204,7 +204,7 @@ class MimeTest extends TestCase
         ];
     }
 
-    public function testFromMessageMultiPart()
+    public function testFromMessageMultiPart(): void
     {
         $message = Mime\Message::createFromMessage(
             '--089e0141a1902f83ee04e0a07b7a' . "\r\n"
@@ -271,7 +271,7 @@ n in das Wasser, Schw=C3=A4nzchen in die H=C3=B6h!',
     /**
      * @group Laminas-1688
      */
-    public function testLineLengthInQuotedPrintableHeaderEncoding()
+    public function testLineLengthInQuotedPrintableHeaderEncoding(): void
     {
         $subject = "Alle meine Entchen schwimmen in dem See, schwimmen in dem See, "
             . "Köpfchen in das Wasser, Schwänzchen in die Höh!";
@@ -313,7 +313,7 @@ n in das Wasser, Schw=C3=A4nzchen in die H=C3=B6h!',
         $this->assertEquals($expected, Mime\Mime::mimeDetectCharset($string));
     }
 
-    public function testEncodeQuotedPrintableShouldBeFastEnoughForLongInputStrings()
+    public function testEncodeQuotedPrintableShouldBeFastEnoughForLongInputStrings(): void
     {
         $str  = str_repeat('this could be anything, ', 200000);
         $time = microtime(true);

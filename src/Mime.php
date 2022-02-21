@@ -28,7 +28,6 @@ use function trim;
  */
 class Mime
 {
-    // phpcs:disable Generic.Files.LineLength.TooLong
     public const TYPE_OCTETSTREAM         = 'application/octet-stream';
     public const TYPE_TEXT                = 'text/plain';
     public const TYPE_HTML                = 'text/html';
@@ -49,7 +48,9 @@ class Mime
     public const MULTIPART_REPORT         = 'multipart/report';
     public const MESSAGE_RFC822           = 'message/rfc822';
     public const MESSAGE_DELIVERY_STATUS  = 'message/delivery-status';
-    public const CHARSET_REGEX            = '#=\?(?P<charset>[\x21\x23-\x26\x2a\x2b\x2d\x5e\5f\60\x7b-\x7ea-zA-Z0-9]+)\?(?P<encoding>[\x21\x23-\x26\x2a\x2b\x2d\x5e\5f\60\x7b-\x7ea-zA-Z0-9]+)\?(?P<text>[\x21-\x3e\x40-\x7e]+)#';
+    // phpcs:disable Generic.Files.LineLength.TooLong
+    public const CHARSET_REGEX                 = '#=\?(?P<charset>[\x21\x23-\x26\x2a\x2b\x2d\x5e\5f\60\x7b-\x7ea-zA-Z0-9]+)\?(?P<encoding>[\x21\x23-\x26\x2a\x2b\x2d\x5e\5f\60\x7b-\x7ea-zA-Z0-9]+)\?(?P<text>[\x21-\x3e\x40-\x7e]+)#';
+    private const QUOTED_PRINTABLE_KEYS_STRING = "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F\x7F\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8A\x8B\x8C\x8D\x8E\x8F\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9A\x9B\x9C\x9D\x9E\x9F\xA0\xA1\xA2\xA3\xA4\xA5\xA6\xA7\xA8\xA9\xAA\xAB\xAC\xAD\xAE\xAF\xB0\xB1\xB2\xB3\xB4\xB5\xB6\xB7\xB8\xB9\xBA\xBB\xBC\xBD\xBE\xBF\xC0\xC1\xC2\xC3\xC4\xC5\xC6\xC7\xC8\xC9\xCA\xCB\xCC\xCD\xCE\xCF\xD0\xD1\xD2\xD3\xD4\xD5\xD6\xD7\xD8\xD9\xDA\xDB\xDC\xDD\xDE\xDF\xE0\xE1\xE2\xE3\xE4\xE5\xE6\xE7\xE8\xE9\xEA\xEB\xEC\xED\xEE\xEF\xF0\xF1\xF2\xF3\xF4\xF5\xF6\xF7\xF8\xF9\xFA\xFB\xFC\xFD\xFE\xFF";
     // phpcs:enable
 
     /** @var null|string */
@@ -391,10 +392,8 @@ class Mime
         "=FE",
         "=FF",
     ];
-    // @codingStandardsIgnoreStart
-    public static $qpKeysString =
-         "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F\x7F\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8A\x8B\x8C\x8D\x8E\x8F\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9A\x9B\x9C\x9D\x9E\x9F\xA0\xA1\xA2\xA3\xA4\xA5\xA6\xA7\xA8\xA9\xAA\xAB\xAC\xAD\xAE\xAF\xB0\xB1\xB2\xB3\xB4\xB5\xB6\xB7\xB8\xB9\xBA\xBB\xBC\xBD\xBE\xBF\xC0\xC1\xC2\xC3\xC4\xC5\xC6\xC7\xC8\xC9\xCA\xCB\xCC\xCD\xCE\xCF\xD0\xD1\xD2\xD3\xD4\xD5\xD6\xD7\xD8\xD9\xDA\xDB\xDC\xDD\xDE\xDF\xE0\xE1\xE2\xE3\xE4\xE5\xE6\xE7\xE8\xE9\xEA\xEB\xEC\xED\xEE\xEF\xF0\xF1\xF2\xF3\xF4\xF5\xF6\xF7\xF8\xF9\xFA\xFB\xFC\xFD\xFE\xFF";
-    // @codingStandardsIgnoreEnd
+    /** @var string */
+    public static $qpKeysString = self::QUOTED_PRINTABLE_KEYS_STRING;
 
     /**
      * Check if the given string is "printable"
@@ -622,7 +621,7 @@ class Mime
     {
         // This string needs to be somewhat unique
         if ($boundary === null) {
-            $this->boundary = '=_' . md5(microtime(1) . static::$makeUnique++);
+            $this->boundary = '=_' . md5(microtime(true) . static::$makeUnique++);
         } else {
             $this->boundary = $boundary;
         }
@@ -659,7 +658,7 @@ class Mime
      * Return a MIME boundary
      *
      * @access public
-     * @return string
+     * @return string|null
      */
     public function boundary()
     {
@@ -675,7 +674,7 @@ class Mime
      */
     public function boundaryLine($EOL = self::LINEEND)
     {
-        return $EOL . '--' . $this->boundary . $EOL;
+        return $EOL . '--' . ($this->boundary ?? '') . $EOL;
     }
 
     /**
@@ -687,7 +686,7 @@ class Mime
      */
     public function mimeEnd($EOL = self::LINEEND)
     {
-        return $EOL . '--' . $this->boundary . '--' . $EOL;
+        return $EOL . '--' . ($this->boundary ?? '') . '--' . $EOL;
     }
 
     /**

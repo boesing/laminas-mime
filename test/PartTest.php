@@ -12,6 +12,7 @@ use function fopen;
 use function quoted_printable_decode;
 use function realpath;
 use function stream_get_contents;
+use function tmpfile;
 
 /**
  * @group      Laminas_Mime
@@ -28,8 +29,13 @@ class PartTest extends TestCase
     /** @var string */
     protected $testText;
 
+    /** @var resource */
+    private $filterResource;
+
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->testText          = 'safdsafsa�lg ��gd�� sd�jg�sdjg�ld�gksd�gj�sdfg�dsj'
             . '�gjsd�gj�dfsjg�dsfj�djs�g kjhdkj fgaskjfdh gksjhgjkdh gjhfsdghdhgksdjhg';
         $this->part              = new Mime\Part($this->testText);
@@ -39,9 +45,12 @@ class PartTest extends TestCase
         $this->part->disposition = 'attachment';
         $this->part->charset     = 'iso8859-1';
         $this->part->id          = '4711';
+        $resource                = tmpfile();
+        self::assertIsResource($resource, 'Could not create temporary resource for unit testing.');
+        $this->filterResource = $resource;
     }
 
-    public function testHeaders()
+    public function testHeaders(): void
     {
         $expectedHeaders = [
             'Content-Type: text/plain',
@@ -59,7 +68,7 @@ class PartTest extends TestCase
         }
     }
 
-    public function testContentEncoding()
+    public function testContentEncoding(): void
     {
         // Test with base64 encoding
         $content = $this->part->getContent();
@@ -74,7 +83,7 @@ class PartTest extends TestCase
         $this->assertEquals($this->testText, $content);
     }
 
-    public function testStreamEncoding()
+    public function testStreamEncoding(): void
     {
         $testfile = realpath(__FILE__);
         $original = file_get_contents($testfile);
@@ -85,8 +94,7 @@ class PartTest extends TestCase
         $part           = new Mime\Part($fp);
         $part->encoding = Mime\Mime::ENCODING_BASE64;
         $fp2            = $part->getEncodedStream();
-        $this->assertIsResource($fp2);
-        $encoded = stream_get_contents($fp2);
+        $encoded        = stream_get_contents($fp2);
         fclose($fp);
         $this->assertEquals(base64_decode($encoded), $original);
 
@@ -96,8 +104,7 @@ class PartTest extends TestCase
         $part           = new Mime\Part($fp);
         $part->encoding = Mime\Mime::ENCODING_QUOTEDPRINTABLE;
         $fp2            = $part->getEncodedStream();
-        $this->assertIsResource($fp2);
-        $encoded = stream_get_contents($fp2);
+        $encoded        = stream_get_contents($fp2);
         fclose($fp);
         $this->assertEquals(quoted_printable_decode($encoded), $original);
     }
@@ -105,7 +112,7 @@ class PartTest extends TestCase
     /**
      * @group Laminas-1491
      */
-    public function testGetRawContentFromPart()
+    public function testGetRawContentFromPart(): void
     {
         $this->assertEquals($this->testText, $this->part->getRawContent());
     }
@@ -115,10 +122,9 @@ class PartTest extends TestCase
      *
      * @group 5428
      */
-    public function testContentEncodingWithStreamReadTwiceINaRow()
+    public function testContentEncodingWithStreamReadTwiceINaRow(): void
     {
         $testfile = realpath(__FILE__);
-        $original = file_get_contents($testfile);
 
         $fp                       = fopen($testfile, 'rb');
         $part                     = new Mime\Part($fp);
@@ -137,9 +143,10 @@ class PartTest extends TestCase
         fclose($fp);
     }
 
-    public function testSettersGetters()
+    public function testSettersGetters(): void
     {
-        $part = new Mime\Part();
+        $filters = ['foo' => $this->filterResource];
+        $part    = new Mime\Part();
         $part->setContent($this->testText)
              ->setEncoding(Mime\Mime::ENCODING_8BIT)
              ->setType('text/plain')
@@ -151,7 +158,7 @@ class PartTest extends TestCase
              ->setLocation('fiction1/fiction2')
              ->setLanguage('en')
              ->setIsStream(false)
-             ->setFilters(['foo'])
+             ->setFilters($filters)
              ->setDescription('foobar');
 
         $this->assertEquals($this->testText, $part->getContent());
@@ -165,7 +172,7 @@ class PartTest extends TestCase
         $this->assertEquals('fiction1/fiction2', $part->getLocation());
         $this->assertEquals('en', $part->getLanguage());
         $this->assertEquals(false, $part->isStream());
-        $this->assertEquals(['foo'], $part->getFilters());
+        $this->assertEquals($filters, $part->getFilters());
         $this->assertEquals('foobar', $part->getDescription());
     }
 
@@ -189,7 +196,7 @@ class PartTest extends TestCase
      * @dataProvider invalidContentTypes
      * @param mixed $content
      */
-    public function testConstructorRaisesInvalidArgumentExceptionForInvalidContentTypes($content)
+    public function testConstructorRaisesInvalidArgumentExceptionForInvalidContentTypes($content): void
     {
         $this->expectException(Mime\Exception\InvalidArgumentException::class);
         new Mime\Part($content);
@@ -199,10 +206,17 @@ class PartTest extends TestCase
      * @dataProvider invalidContentTypes
      * @param mixed $content
      */
-    public function testSetContentRaisesInvalidArgumentExceptionForInvalidContentTypes($content)
+    public function testSetContentRaisesInvalidArgumentExceptionForInvalidContentTypes($content): void
     {
         $part = new Mime\Part();
         $this->expectException(Mime\Exception\InvalidArgumentException::class);
         $part->setContent($content);
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        $resource = $this->filterResource;
+        fclose($resource);
     }
 }

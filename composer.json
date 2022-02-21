@@ -16,7 +16,11 @@
         "forum": "https://discourse.laminas.dev"
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "composer/package-versions-deprecated": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     },
     "require": {
         "php": "^7.3 || ~8.0.0 || ~8.1.0",
@@ -24,8 +28,10 @@
     },
     "require-dev": {
         "laminas/laminas-coding-standard": "~2.2.1",
-        "laminas/laminas-mail": "^2.12",
-        "phpunit/phpunit": "^9.3"
+        "laminas/laminas-mail": "^2.15",
+        "phpunit/phpunit": "^9.3",
+        "psalm/plugin-phpunit": "^0.16.1",
+        "vimeo/psalm": "^4.21"
     },
     "suggest": {
         "laminas/laminas-mail": "Laminas\\Mail component"
@@ -36,9 +42,6 @@
         }
     },
     "autoload-dev": {
-        "files": [
-            "test/TestAsset/Mail/Headers.php"
-        ],
         "psr-4": {
             "LaminasTest\\Mime\\": "test/"
         }

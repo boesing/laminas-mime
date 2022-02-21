@@ -8,9 +8,12 @@ use PHPUnit\Framework\TestCase;
 
 class DecodeTest extends TestCase
 {
-    public function testDecodeMessageWithoutHeaders()
+    public function testDecodeMessageWithoutHeaders(): void
     {
         $text = 'This is a message body';
+
+        $headers = new Headers();
+        $body    = '';
 
         Decode::splitMessage($text, $headers, $body);
 

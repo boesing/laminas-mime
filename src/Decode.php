@@ -33,6 +33,7 @@ class Decode
      * @param  string $body     raw body of message
      * @param  string $boundary boundary as found in content-type
      * @return array parts with content of each part, empty if no parts found
+     * @psalm-return list<string>
      * @throws Exception\RuntimeException
      */
     public static function splitMime($body, $boundary)
@@ -78,17 +79,18 @@ class Decode
      * @param  string $boundary boundary as found in content-type
      * @param  string $EOL EOL string; defaults to {@link Laminas\Mime\Mime::LINEEND}
      * @return array|null parts as array('header' => array(name => value), 'body' => content), null if no parts found
+     * @psalm-return list<array{header:Headers,body:string}>|null
      * @throws Exception\RuntimeException
      */
     public static function splitMessageStruct($message, $boundary, $EOL = Mime::LINEEND)
     {
         $parts = static::splitMime($message, $boundary);
         if (! $parts) {
-            return;
+            return null;
         }
         $result  = [];
-        $headers = null; // "Declare" variable before the first usage "for reading"
-        $body    = null; // "Declare" variable before the first usage "for reading"
+        $headers = new Headers();
+        $body    = '';
         foreach ($parts as $part) {
             static::splitMessage($part, $headers, $body, $EOL);
             $result[] = [
@@ -107,10 +109,12 @@ class Decode
      *
      * @param  string|Headers  $message raw message with header and optional content
      * @param  Headers         $headers output param, headers container
+     * @param-out Headers      $headers
      * @param  string          $body    output param, content of message
+     * @param-out string       $body
      * @param  string          $EOL EOL string; defaults to {@link Laminas\Mime\Mime::LINEEND}
      * @param  bool            $strict  enable strict mode for parsing message
-     * @return null
+     * @return void
      */
     public static function splitMessage($message, &$headers, &$body, $EOL = Mime::LINEEND, $strict = false)
     {
@@ -131,7 +135,7 @@ class Decode
         if (! $strict) {
             $parts = explode(':', $firstline, 2);
             if (count($parts) !== 2) {
-                $message = substr($message, strpos($message, $EOL) + 1);
+                $message = substr($message, ((int) strpos($message, $EOL)) + 1);
             }
         }
 
@@ -167,7 +171,7 @@ class Decode
      *
      * @param  string $type       content-type
      * @param  string $wantedPart the wanted part, else an array with all parts is returned
-     * @return string|array wanted part or all parts as array('type' => content-type, partname => value)
+     * @return string|array|null wanted part or all parts as array('type' => content-type, partname => value)
      */
     public static function splitContentType($type, $wantedPart = null)
     {
@@ -180,7 +184,7 @@ class Decode
      * @param  string $field      header field
      * @param  string $wantedPart the wanted part, else an array with all parts is returned
      * @param  string $firstName  key name for the first part
-     * @return string|array wanted part or all parts as array($firstName => firstPart, partname => value)
+     * @return string|array|null wanted part or all parts as array($firstName => firstPart, partname => value)
      * @throws Exception\RuntimeException
      */
     public static function splitHeaderField($field, $wantedPart = null, $firstName = '0')
@@ -209,7 +213,7 @@ class Decode
                 }
                 return substr($matches[2][$key], 1, -1);
             }
-            return;
+            return null;
         }
 
         $split = [];
